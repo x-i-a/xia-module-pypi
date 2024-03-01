@@ -1,6 +1,6 @@
-from xia_module import Module
+from xia_module_pypi import Pypi
 
 
-class PypiGcp(Module):
+class PypiGcp(Pypi):
     module_name = "gcp-module-pypi"
     activate_depends = ["gcp-module-project"]
