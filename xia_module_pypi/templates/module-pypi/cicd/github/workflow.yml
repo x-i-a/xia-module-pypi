@@ -1,0 +1,22 @@
+name: Deploy - Pypi - Repository
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prd
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - id: checkout-code
+        name: Checkout code
+        uses: actions/checkout@v4
+
+      - id: publish-pypi
+        name: Publish PYPI
+        uses: ./.github/actions/module-pypi/publish-pypi
