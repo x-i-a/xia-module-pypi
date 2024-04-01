@@ -1,0 +1,32 @@
+name: Deploy - GCP - Repository
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prd
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - id: checkout-code
+        name: Checkout code
+        uses: actions/checkout@v4
+
+      - id: auth-gcp-oidc
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.PROJECT_ID }}
+          workload_identity_provider: ${{ vars.SECRET_WIP_NAME }}
+          service_account: ${{ vars.PROVIDER_SA_EMAIL }}
+
+      - id: publish-pypi-gcp
+        name: Publish PYPI in GCP
+        uses: ./.github/actions/module-pypi/publish-pypi
+        with:
+          project_id: ${{ vars.PROJECT_ID }}

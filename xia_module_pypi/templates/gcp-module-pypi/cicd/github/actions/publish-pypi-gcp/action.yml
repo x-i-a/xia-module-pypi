@@ -1,21 +1,13 @@
-name: Deploy - GCP - Repository
+name: 'GCP Authentication'
+description: 'Deploy to Google Cloud Platform'
+inputs:
+  project_id:
+    description: 'GCP Project ID'
+    required: true
 
-on:
-  push:
-    tags:
-      - '*'
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    environment: prd
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
+runs:
+  using: 'composite'
+  steps:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
@@ -31,13 +23,6 @@ jobs:
           python setup.py sdist bdist_wheel
           CHECK_VERSION=$(ls dist/*-${GITHUB_REF#refs/tags/}*.tar.gz)
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          project_id: ${{ vars.PROJECT_ID }}
-          workload_identity_provider: ${{ vars.SECRET_WIP_NAME }}
-          service_account: ${{ vars.PROVIDER_SA_EMAIL }}
-
       - name: Connecting Artifact Registry for twine
         run: |
           pip install keyring
@@ -45,5 +30,5 @@ jobs:
 
       - name: Upload package to Google Artifact Registry
         env:
-          TWINE_REPOSITORY_URL: https://europe-west1-python.pkg.dev/${{ vars.PROJECT_ID }}/pypi-custom
+          TWINE_REPOSITORY_URL: https://europe-west1-python.pkg.dev/${{ vars.project_id }}/pypi-custom
         run: twine upload --non-interactive dist/*
