@@ -7,7 +7,7 @@ terraform {
 }
 
 locals {
-  module_name = replace(substr(basename(path.module), 9, length(basename(path.module)) - 9), "-", "_")
+  module_name = substr(basename(path.module), 9, length(basename(path.module)) - 9)
   project = yamldecode(file(var.project_file))
   landscape = yamldecode(file(var.landscape_file))
   applications = yamldecode(file(var.applications_file))
