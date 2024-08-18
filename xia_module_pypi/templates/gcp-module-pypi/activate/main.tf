@@ -22,7 +22,7 @@ locals {
       for app_name in local.application_list : {
         app_name          = app_name
         env_name          = env_name
-        project_id        = "${local.project_prefix}${env_name}"
+        project_id        = var.gcp_projects[env_name]["project_id"]
       }
     ]
   ]))
