@@ -14,7 +14,7 @@ locals {
   environment_dict = var.environment_dict
   repository_region = local.modules[local.module_name]["repository_region"]
 
-  app_to_activate = lookup(var.module_app_to_activate, var.module_name, [])
+  app_to_activate = lookup(var.module_app_to_activate, local.module_name, [])
   app_configuration = { for k, v in var.app_env_config : k => v if contains(local.app_to_activate, v["app_name"]) }
 }
 
