@@ -7,7 +7,7 @@ terraform {
 }
 
 locals {
-  module_name = substr(basename(path.module), 9, length(basename(path.module)) - 9)
+  module_name = coalesce(var.module_name, substr(basename(path.module), 9, length(basename(path.module)) - 9))
   landscape = var.landscape
   applications = var.applications
   modules = var.modules
