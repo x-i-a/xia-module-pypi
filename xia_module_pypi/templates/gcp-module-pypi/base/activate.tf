@@ -5,6 +5,7 @@ module "activate_gcp_module_pypi" {
   applications_file = var.applications_file
   modules_file = var.modules_file
 
+  gcp_projects = module.gcp_module_project.gcp_projects
   depends_on = [module.gcp_module_project, module.gh_module_application]
 }
 

@@ -21,3 +21,8 @@ variable "project_file" {
   description = "Project config file"
   default = "../../../config/gcp-project.yaml"
 }
+
+variable "gcp_projects" {
+  type = map(any)
+  description = "GCP Project List"
+}
