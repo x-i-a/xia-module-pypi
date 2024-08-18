@@ -8,11 +8,10 @@ terraform {
 
 locals {
   module_name = substr(basename(path.module), 9, length(basename(path.module)) - 9)
-  project = yamldecode(file(var.project_file))
-  landscape = yamldecode(file(var.landscape_file))
-  applications = yamldecode(file(var.applications_file))
-  project_prefix = local.project["project_prefix"]
-  environment_dict = local.landscape["environments"]
+  landscape = var.landscape
+  applications = var.applications
+  environment_dict = var.environment_dict
+
   application_list = local.landscape["modules"][local.module_name]["applications"]
   repository_region = local.landscape["modules"][local.module_name]["repository_region"]
 }
@@ -127,3 +126,11 @@ resource "google_artifact_registry_repository_iam_member" "gcp_module_python_dep
   depends_on = [google_project_iam_custom_role.gcp_module_python_deployer_role]
 }
 
+resource "github_actions_environment_variable" "action_var_gcp_repo_region" {
+  for_each = { for s in local.all_role_attribution : "${s.app_name}-${s.env_name}" => s }
+
+  repository       = local.applications[each.value["app_name"]]["repository_name"]
+  environment      = each.value["env_name"]
+  variable_name    = "GCP_REPO_REGION"
+  value            = local.repository_region
+}
