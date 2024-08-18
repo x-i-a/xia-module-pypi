@@ -32,7 +32,7 @@ locals {
 resource "google_project_service" "artifact_registry_api" {
   for_each = local.environment_dict
 
-  project = "${local.project_prefix}${each.key}"
+  project = var.gcp_projects[each.key]["project_id"]
   service = "artifactregistry.googleapis.com"
   disable_on_destroy = false
 }
