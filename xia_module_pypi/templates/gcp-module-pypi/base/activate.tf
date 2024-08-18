@@ -1,7 +1,6 @@
 module "activate_gcp_module_pypi" {
   source = "../../modules/activate-gcp-module-pypi"
 
-  module_name = "gcp-module-pypi"
   landscape = local.landscape
   applications = local.applications
   modules = local.modules
