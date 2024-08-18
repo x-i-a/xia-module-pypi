@@ -12,6 +12,7 @@ locals {
   landscape = yamldecode(file(var.landscape_file))
   applications = yamldecode(file(var.applications_file))
   project_prefix = local.project["project_prefix"]
+  project_ids = module.gcp_module_project.gcp_projects
   environment_dict = local.landscape["environments"]
   application_list = local.landscape["modules"][local.module_name]["applications"]
   repository_region = local.landscape["modules"][local.module_name]["repository_region"]
