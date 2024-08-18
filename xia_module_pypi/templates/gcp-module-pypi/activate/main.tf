@@ -40,7 +40,7 @@ resource "google_project_service" "artifact_registry_api" {
 resource "google_artifact_registry_repository" "pypi_official" {
   for_each = local.environment_dict
 
-  project       = "${local.project_prefix}${each.key}"
+  project       = var.gcp_projects[each.key]["project_id"]
   location      = local.repository_region
   repository_id = "pypi-official"
   format        = "PYTHON"
@@ -59,7 +59,7 @@ resource "google_artifact_registry_repository" "pypi_official" {
 resource "google_artifact_registry_repository" "pypi_custom" {
   for_each = local.environment_dict
 
-  project       = "${local.project_prefix}${each.key}"
+  project       = var.gcp_projects[each.key]["project_id"]
   location      = local.repository_region
   repository_id = "pypi-custom"
   format        = "PYTHON"
@@ -71,7 +71,7 @@ resource "google_artifact_registry_repository" "pypi_custom" {
 resource "google_artifact_registry_repository" "pypi" {
   for_each = local.environment_dict
 
-  project       = "${local.project_prefix}${each.key}"
+  project       = var.gcp_projects[each.key]["project_id"]
   location      = local.repository_region
   repository_id = "pypi"
   description   = "PyPI repository"
@@ -95,7 +95,7 @@ resource "google_artifact_registry_repository" "pypi" {
 resource "google_project_iam_custom_role" "gcp_module_python_deployer_role" {
   for_each = local.environment_dict
 
-  project     = "${local.project_prefix}${each.key}"
+  project     = var.gcp_projects[each.key]["project_id"]
   role_id     = "gcpModulePythonDeployer"
   title       = "GCP Python Module Deployer Role"
   description = "GCP Python Module Deployer Role"
@@ -118,20 +118,12 @@ resource "google_project_iam_custom_role" "gcp_module_python_deployer_role" {
 resource "google_artifact_registry_repository_iam_member" "gcp_module_python_deployer_role_member" {
   for_each = { for s in local.all_role_attribution : "${s.app_name}-${s.env_name}" => s }
 
-  project       = each.value["project_id"]
+  project       = var.gcp_projects[each.value["env_name"]]["project_id"]
   location      = google_artifact_registry_repository.pypi_custom[each.value["env_name"]].location
   repository    = google_artifact_registry_repository.pypi_custom[each.value["env_name"]].repository_id
   role          = google_project_iam_custom_role.gcp_module_python_deployer_role[each.value["env_name"]].id
-  member        = "serviceAccount:wip-${each.value["app_name"]}-sa@${each.value["project_id"]}.iam.gserviceaccount.com"
+  member        = "serviceAccount:wip-${each.value["app_name"]}-sa@${var.gcp_projects[each.value["env_name"]]["project_id"]}.iam.gserviceaccount.com"
 
   depends_on = [google_project_iam_custom_role.gcp_module_python_deployer_role]
 }
 
-resource "github_actions_environment_variable" "action_var_gcp_repo_region" {
-  for_each = { for s in local.all_role_attribution : "${s.app_name}-${s.env_name}" => s }
-
-  repository       = local.applications[each.value["app_name"]]["repository_name"]
-  environment      = each.value["env_name"]
-  variable_name    = "GCP_REPO_REGION"
-  value            = local.repository_region
-}
