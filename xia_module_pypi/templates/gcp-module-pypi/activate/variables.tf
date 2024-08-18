@@ -22,6 +22,7 @@ variable "applications" {
 variable "modules" {
   type = any
   description = "Module Configuration"
+  default = substr(basename(path.module), 9, length(basename(path.module)) - 9)
 }
 
 variable "environment_dict" {
