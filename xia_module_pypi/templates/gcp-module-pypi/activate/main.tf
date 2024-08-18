@@ -10,22 +10,12 @@ locals {
   module_name = substr(basename(path.module), 9, length(basename(path.module)) - 9)
   landscape = var.landscape
   applications = var.applications
+  modules = var.modules
   environment_dict = var.environment_dict
+  repository_region = local.modules[local.module_name]["repository_region"]
 
-  application_list = local.landscape["modules"][local.module_name]["applications"]
-  repository_region = local.landscape["modules"][local.module_name]["repository_region"]
-}
-
-locals {
-  all_role_attribution = toset(flatten([
-    for env_name, env in local.environment_dict : [
-      for app_name in local.application_list : {
-        app_name          = app_name
-        env_name          = env_name
-        project_id        = var.gcp_projects[env_name]["project_id"]
-      }
-    ]
-  ]))
+  app_to_activate = lookup(var.module_app_to_activate, var.module_name, [])
+  app_configuration = { for k, v in var.app_env_config : k => v if contains(local.app_to_activate, v["app_name"]) }
 }
 
 resource "google_project_service" "artifact_registry_api" {
@@ -115,7 +105,7 @@ resource "google_project_iam_custom_role" "gcp_module_python_deployer_role" {
 }
 
 resource "google_artifact_registry_repository_iam_member" "gcp_module_python_deployer_role_member" {
-  for_each = { for s in local.all_role_attribution : "${s.app_name}-${s.env_name}" => s }
+  for_each = local.app_configuration
 
   project       = var.gcp_projects[each.value["env_name"]]["project_id"]
   location      = google_artifact_registry_repository.pypi_custom[each.value["env_name"]].location
@@ -127,7 +117,7 @@ resource "google_artifact_registry_repository_iam_member" "gcp_module_python_dep
 }
 
 resource "github_actions_environment_variable" "action_var_gcp_repo_region" {
-  for_each = { for s in local.all_role_attribution : "${s.app_name}-${s.env_name}" => s }
+  for_each = local.app_configuration
 
   repository       = local.applications[each.value["app_name"]]["repository_name"]
   environment      = each.value["env_name"]
