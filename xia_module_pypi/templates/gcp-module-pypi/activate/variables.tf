@@ -20,7 +20,7 @@ variable "applications" {
 }
 
 variable "modules" {
-  type = map(any)
+  type = any
   description = "Module Configuration"
 }
 
