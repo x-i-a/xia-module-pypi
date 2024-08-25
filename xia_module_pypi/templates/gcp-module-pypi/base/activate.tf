@@ -1,4 +1,18 @@
+provider "google" {
+  alias = "activate-gcp-pypi"
+}
+
+provider "github" {
+  alias = "activate-gcp-pypi"
+  owner = lookup(yamldecode(file("../../../config/core/github.yaml")), "github_owner", null)
+}
+
 module "activate_gcp_module_pypi" {
+  providers = {
+    google = google.activate-gcp-pypi
+    github = github.activate-gcp-pypi
+  }
+
   source = "../../modules/activate-gcp-module-pypi"
 
   landscape = local.landscape
